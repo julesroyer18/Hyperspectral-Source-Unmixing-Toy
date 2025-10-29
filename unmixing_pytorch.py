@@ -427,9 +427,11 @@ def plotAbundancesSimpleV2(
     abundances = np.transpose(abundances, axes=[1, 0, 2])
     num_endmembers = abundances.shape[2]
 
+    # Calculate grid dimensions
     n_cols = min(3, num_endmembers)  # Max 3 columns
     n_rows = (num_endmembers + n_cols - 1) // n_cols
 
+    # Create figure with improved layout
     fig, axes = plt.subplots(n_rows, n_cols, figsize=(15, 5 * n_rows))
     if num_endmembers == 1:
         axes = [axes]
@@ -444,6 +446,7 @@ def plotAbundancesSimpleV2(
 
     fig.suptitle(main_title, fontsize=16, fontweight="bold")
 
+    # Enhanced colormap options
     colormaps = {
         "viridis": "viridis",
         "plasma": "plasma",
@@ -679,51 +682,6 @@ def plotAbundancesSimpleGT(
 
     plt.tight_layout()
     plt.subplots_adjust(top=0.85, bottom=0.12)
-
-    if save_path:
-        plt.savefig(save_path, dpi=300, bbox_inches="tight")
-
-    plt.show()
-
-
-def plotTrainingHistory(history, title_suffix="", save_path=None):
-    """Plot training loss history with enhanced visuals"""
-    if not history:
-        print("No training history to plot")
-        return
-
-    plt.figure(figsize=(10, 3))
-    plt.style.use("seaborn-v0_8-whitegrid")
-
-    epochs = range(1, len(history) + 1)
-    plt.plot(epochs, history, "b-", linewidth=2, marker="o", markersize=4, alpha=0.8)
-
-    plt.title(
-        f'Training Loss History{" - " + title_suffix if title_suffix else ""}',
-        fontsize=14,
-        fontweight="bold",
-    )
-    plt.xlabel("Epoch", fontsize=12)
-    plt.ylabel("Loss", fontsize=12)
-    plt.grid(True, alpha=0.3)
-
-    # Add final loss annotation
-    final_loss = history[-1]
-    plt.annotate(
-        f"Final Loss: {final_loss:.6f}",
-        xy=(len(history), final_loss),
-        xytext=(len(history) * 0.7, final_loss * 1.1),
-        fontsize=10,
-        bbox=dict(boxstyle="round,pad=0.3", facecolor="yellow", alpha=0.7),
-        arrowprops=dict(arrowstyle="->", connectionstyle="arc3,rad=0"),
-    )
-
-    # Set y-axis to log scale if loss varies significantly
-    if max(history) / min(history) > 10:
-        plt.yscale("log")
-        plt.ylabel("Loss (log scale)", fontsize=12)
-
-    plt.tight_layout()
 
     if save_path:
         plt.savefig(save_path, dpi=300, bbox_inches="tight")
