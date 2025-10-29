@@ -39,8 +39,6 @@ class SADLoss(nn.Module):
         # This is crucial before applying acos.
         cosine_similarity_clamped = torch.clamp(cosine_similarity, -1.0, 1.0)
 
-        # Calculate the angle in radians (the SAD)
         sad = torch.acos(cosine_similarity_clamped)
 
-        # Return the mean SAD over the batch
         return torch.mean(sad)

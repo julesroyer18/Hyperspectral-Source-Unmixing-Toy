@@ -306,7 +306,6 @@ def plotEndmembersAndGT(endmembers, endmembersGT):
 
 
 def plotEndmembersAndGTV2(endmembers, endmembersGT, title_suffix="", save_path=None):
-    """Enhanced version of plotEndmembersAndGT with legends and improved visuals"""
     if isinstance(endmembers, torch.Tensor):
         endmembers = endmembers.detach().cpu().numpy()
     if isinstance(endmembersGT, torch.Tensor):
@@ -319,10 +318,8 @@ def plotEndmembersAndGTV2(endmembers, endmembersGT, title_suffix="", save_path=N
 
     hat, sad = order_endmembers(endmembersGT, endmembers)
 
-    # Create figure with improved styling - fix the subplot layout
     fig, axes = plt.subplots(1, num_endmembers, figsize=(6 * num_endmembers, 6))
 
-    # Handle single endmember case
     if num_endmembers == 1:
         axes = [axes]
 
@@ -365,7 +362,6 @@ def plotEndmembersAndGTV2(endmembers, endmembersGT, title_suffix="", save_path=N
             alpha=0.9,
         )
 
-        # Individual SAD for this endmember
         individual_sad = numpy_SAD(endmembers[hat[i], :], endmembersGT[i, :])
         ax.set_title(
             f"Endmember {i+1}\nSAD: {individual_sad:.4f} rad",
@@ -373,14 +369,12 @@ def plotEndmembersAndGTV2(endmembers, endmembersGT, title_suffix="", save_path=N
             fontweight="bold",
         )
 
-        # Styling
         ax.grid(True, alpha=0.3)
         ax.set_xlabel("Band Index", fontsize=10)
         ax.set_ylabel("Reflectance", fontsize=10)
         ax.legend(loc="upper right", fontsize=9)
         ax.set_ylim(0, 1.1)
 
-        # Add subtle background
         ax.patch.set_facecolor("#f8f9fa")
         ax.patch.set_alpha(0.5)
 
@@ -433,11 +427,9 @@ def plotAbundancesSimpleV2(
     abundances = np.transpose(abundances, axes=[1, 0, 2])
     num_endmembers = abundances.shape[2]
 
-    # Calculate grid dimensions
     n_cols = min(3, num_endmembers)  # Max 3 columns
     n_rows = (num_endmembers + n_cols - 1) // n_cols
 
-    # Create figure with improved layout
     fig, axes = plt.subplots(n_rows, n_cols, figsize=(15, 5 * n_rows))
     if num_endmembers == 1:
         axes = [axes]
@@ -452,7 +444,6 @@ def plotAbundancesSimpleV2(
 
     fig.suptitle(main_title, fontsize=16, fontweight="bold")
 
-    # Enhanced colormap options
     colormaps = {
         "viridis": "viridis",
         "plasma": "plasma",

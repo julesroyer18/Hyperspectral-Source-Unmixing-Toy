@@ -15,7 +15,6 @@ import warnings
 import matplotlib
 import matplotlib.pyplot as plt
 
-from unmixing_pytorch import SumToOne
 
 device = torch.device("mps")
 
@@ -75,7 +74,6 @@ class Autoencoder(nn.Module):
         self.batch_norm = nn.BatchNorm1d(n_end)
         self.sparse_relu = SparseReLU(n_end)
         self.sum_to_one = SumToOneSimple()
-        # self.sum_to_one = SumToOne(params)
         self.dropout = nn.Dropout(p=0.0045)
 
         # Decoder layer (endmembers)
@@ -101,23 +99,19 @@ class Autoencoder(nn.Module):
         return decoded, abundances
 
     def fit(self, data, plot_every=0):
-        # Convert data to tensor
         if isinstance(data, np.ndarray):
             data_tensor = torch.FloatTensor(data).to(self.device)
         else:
             data_tensor = data.to(self.device)
 
-        # Create dataset and dataloader
         dataset = TensorDataset(data_tensor, data_tensor)
         dataloader = DataLoader(
             dataset, batch_size=self.params["batch_size"], shuffle=True
         )
 
-        # Setup optimizer
         optimizer = self.params["optimizer"]
         loss_fn = self.params["loss"]
 
-        # Training loop
         history = []
         for epoch in range(self.params["epochs"]):
             epoch_loss = 0.0
@@ -126,16 +120,13 @@ class Autoencoder(nn.Module):
             for batch_x, batch_y in dataloader:
                 optimizer.zero_grad()
 
-                # Forward pass
                 outputs, abundances = self.forward(batch_x)
 
-                # Compute loss
                 loss = loss_fn(outputs, batch_y)
 
-                # Backward pass
                 loss.backward()
 
-                # Ensure decoder weights remain non-negative
+                # ensure decoder weights are non-negative
                 with torch.no_grad():
                     self.decoder.weight.data = torch.clamp(
                         self.decoder.weight.data, min=0
@@ -153,12 +144,11 @@ class Autoencoder(nn.Module):
                 print(
                     f"Epoch {epoch + 1}/{self.params['epochs']}, Loss: {avg_loss:.6f}"
                 )
-                # You can add plotting callback here if needed
 
         return history
 
     def get_endmembers(self):
-        # Transpose to get shape (num_endmembers, n_bands) instead of (n_bands, num_endmembers)
+        # transpose to get shape (num_endmembers, n_bands) instead of (n_bands, num_endmembers)
         return self.decoder.weight.data.cpu().numpy().T
 
     def get_abundances(self):
@@ -204,10 +194,8 @@ class BetaVAE(Autoencoder):
 
         # --- Encoder Architecture depends on the chosen latent distribution ---
         if self.latent_dist in ["gaussian", "trunc_normal"]:
-            # For Gaussian-based models, encoder outputs mu and log_var
             encoder_output_dim = n_end * 2
         elif self.latent_dist == "dirichlet":
-            # For Dirichlet, encoder outputs concentration parameters (alphas)
             encoder_output_dim = n_end
         else:
             raise ValueError(f"Unknown latent distribution: {self.latent_dist}")
@@ -229,7 +217,6 @@ class BetaVAE(Autoencoder):
 
         # --- Utility and Decoder Layers (mostly reused) ---
         if self.latent_dist != "dirichlet":
-            # These layers are part of the ad-hoc post-processing for Gaussians
             self.batch_norm = nn.BatchNorm1d(n_end)
             self.sparse_relu = SparseReLU(n_end)
             self.sum_to_one = SumToOneSimple()
@@ -262,6 +249,7 @@ class BetaVAE(Autoencoder):
             mu = encoder_output[:, : self.params["num_endmembers"]]
             logvar = encoder_output[:, self.params["num_endmembers"] :]
             z = self.reparameterize_gaussian(mu, logvar)
+
             # Post-processing to enforce constraints
             z_norm = self.batch_norm(z)
             z_sparse = self.sparse_relu(z_norm)
