@@ -193,7 +193,7 @@ class BetaVAE(Autoencoder):
         self.latent_dist = params.get("latent_dist", "gaussian")
 
         # --- Encoder Architecture depends on the chosen latent distribution ---
-        if self.latent_dist in ["gaussian", "trunc_normal"]:
+        if self.latent_dist in "gaussian":
             encoder_output_dim = n_end * 2
         elif self.latent_dist == "dirichlet":
             encoder_output_dim = n_end
